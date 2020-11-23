@@ -13,16 +13,14 @@ from haystack.retriever.dense import DensePassageRetriever
 
 # ## Preprocessing of documents
 # Let's first get some documents that we want to query
-print("Debug")
-@st.cache()
-def create_retriver():
-	print("Debug")
+@st.cache(allow_output_mutation=True)
+def create_store():
 	# FAISS is a library for efficient similarity search on a cluster of dense vectors.
 	# The FAISSDocumentStore uses a SQL(SQLite in-memory be default) document store under-the-hood
 	# to store the document text and other meta data. The vector embeddings of the text are
 	# indexed on a FAISS Index that later is queried for searching answers.
 	document_store = FAISSDocumentStore()
-	
+
 	doc_dir = "data/article_txt_got"
 	s3_url = "https://s3.eu-central-1.amazonaws.com/deepset.ai-farm-qa/datasets/documents/wiki_gameofthrones_txt.zip"
 	fetch_archive_from_http(url=s3_url, output_dir=doc_dir)
@@ -32,7 +30,11 @@ def create_retriver():
 
 	# Now, let's write the docs to our DB.
 	document_store.write_documents(dicts)
+	return document_store
 
+def create_retriver():
+	
+	document_store = create_store()
 	### Retriever
 	retriever = DensePassageRetriever(document_store=document_store,
 									query_embedding_model="facebook/dpr-question_encoder-single-nq-base",
@@ -79,28 +81,28 @@ header_html = "Options"
 header_full = """
 <html>
   <head>
-    <style>
-      .img-container {
-        padding-left: 90px;
-        padding-right: 90px;
-        padding-top: 50px;
-        padding-bottom: 50px;
-        background-color: #f0f3f9;
-      }
-    </style>
+	<style>
+	  .img-container {
+		padding-left: 90px;
+		padding-right: 90px;
+		padding-top: 50px;
+		padding-bottom: 50px;
+		background-color: #f0f3f9;
+	  }
+	</style>
   </head>
   <body>
-    <span class="img-container"> <!-- Inline parent element -->
-      %s
-    </span>
+	<span class="img-container"> <!-- Inline parent element -->
+	  %s
+	</span>
   </body>
 </html>
 """ % (
-    header_html,
+	header_html,
 )
 st.sidebar.markdown(
-    header_full,
-    unsafe_allow_html=True,
+	header_full,
+	unsafe_allow_html=True,
 )
 
 # Long Form QA with ELI5 and Wikipedia
@@ -112,27 +114,27 @@ a pre-processed fixed snapshot of Wikipedia.
 st.sidebar.markdown(description, unsafe_allow_html=True)
 
 action_list = [
-    "Answer the question",
-    "View the retrieved document only",
-    "Show me everything, please!",
+	"Answer the question",
+	"View the retrieved document only",
+	"Show me everything, please!",
 ]
 demo_options = st.sidebar.checkbox("Demo options")
 if demo_options:
-    action_st = st.sidebar.selectbox(
-        "",
-        action_list,
-        index=2,
-    )
-    action = action_list.index(action_st)
-    show_type = st.sidebar.selectbox(
-        "",
-        ["Show probability ", "Show score"],
-        index=0,
-    )
-    
+	action_st = st.sidebar.selectbox(
+		"",
+		action_list,
+		index=2,
+	)
+	action = action_list.index(action_st)
+	"""show_type = st.sidebar.selectbox(
+		"",
+		["Show probability ", "Show score"],
+		index=0,
+	)"""
+	
 else:
-    action = 2
-    show_passages = True
+	action = 2
+	show_passages = True
 #prediction = finder.get_answers(question="Who is the father of Arya Stark?", top_k_retriever=10, top_k_reader=5)
 
 
@@ -140,45 +142,45 @@ else:
 # prediction = finder.get_answers(question="Who is the sister of Sansa?", top_k_reader=5)
 # start main text
 questions_list = [
-    "<MY QUESTION>",
-    "Who is the father of Arya Stark?",
-    "Who created the Dothraki vocabulary?",
-    "Who is the sister of Sansa?",
+	"<MY QUESTION>",
+	"Who is the father of Arya Stark?",
+	"Who created the Dothraki vocabulary?",
+	"Who is the sister of Sansa?",
 
 ]
 question_s = st.selectbox(
-    "What would you like to ask? ---- select <MY QUESTION> to enter a new query",
-    questions_list,
-    index=1,
+	"What would you like to ask? ---- select <MY QUESTION> to enter a new query",
+	questions_list,
+	index=1,
 )
 if question_s == "<MY QUESTION>":
-    question = st.text_input("Enter your question here:", "")
+	question = st.text_input("Enter your question here:", "")
 else:
-    question = question_s
+	question = question_s
 
 if st.button("Show me!"):
-    if action in [0, 1, 2]:
+	if action in [0, 1, 2]:
 		prediction = finder.get_answers(question=question, top_k_retriever=10, top_k_reader=5)
 		answers = [prediction['answers'][i]['answer'] for i in range(len(prediction['answers']))]
 		contexts = [prediction['answers'][i]['context'] for i in range(len(prediction['answers']))]
 	
 	if action in [0, 2]:
-        
-        st.markdown("### The model generated answer is:")
-        st.write(answers[0])
+		
+		st.markdown("### The model generated answer is:")
+		st.write(answers[0])
 		st.markdown("--- \n ### The model extaracted answer from following passage:")
 		st.write(contexts[0])
-    if action == 2 :
-        st.markdown("--- \n ### The other answers and corresponding passages:")
-        for ans, con in zip(answers,contexts):
+	if action == 2 :
+		st.markdown("--- \n ### The other answers and corresponding passages:")
+		for ans, con in zip(answers,contexts):
 			st.write(ans)
-            st.write(
-                    '> <span style="font-family:arial; font-size:10pt;">' + con + "</span>", unsafe_allow_html=True
-                )
-    if action in [1]:
+			st.write(
+					'> <span style="font-family:arial; font-size:10pt;">' + con + "</span>", unsafe_allow_html=True
+				)
+	if action in [1]:
 		st.markdown("--- \n ### The related passages to question are:")
-        for ans, con in zip(answers,contexts):
-            st.write(
-                    '> <span style="font-family:arial; font-size:10pt;">' + con + "</span>", unsafe_allow_html=True
-                )
+		for ans, con in zip(answers,contexts):
+			st.write(
+					'> <span style="font-family:arial; font-size:10pt;">' + con + "</span>", unsafe_allow_html=True
+				)
 
