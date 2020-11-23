@@ -137,20 +137,20 @@ else:
 	show_passages = True
 
 choose_retrvr = st.sidebar.checkbox("Retriever options")
-if choose_retrvr
-retriver = st.sidebar.selectbox(
-		"",
-		["BM25","Dense","Tf-Idf","Embedding"],
-		index=1,
-	)
+if choose_retrvr:
+	retriver = st.sidebar.selectbox(
+			"",
+			["BM25","Dense","Tf-Idf","Embedding"],
+			index=1,
+		)
 
-choose_model = st.sidebar.checkbox("Model options")
-if choose_retrvr
-retriver = st.sidebar.selectbox(
-		"",
-		["Abstractive", "Genrative type(RAG)"],
-		index=0,
-	)
+mod_op = st.sidebar.checkbox("Model options")
+if mod_op:
+	mod = st.sidebar.selectbox(
+			"",
+			["Abstractive", "Genrative type(RAG)"],
+			index=0,
+		)
 #prediction = finder.get_answers(question="Who is the father of Arya Stark?", top_k_retriever=10, top_k_reader=5)
 st.checkbox("Want to upload a articel/document")
 file = st.file_uploader("Choose a file(.pdf, .dox, .csv, .txt)")
