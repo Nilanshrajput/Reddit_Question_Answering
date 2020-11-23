@@ -32,7 +32,7 @@ retriever = DensePassageRetriever(document_store=document_store,
                                   max_seq_len_query=64,
                                   max_seq_len_passage=256,
                                   batch_size=2,
-                                  use_gpu=True,
+                                  use_gpu=False,
                                   embed_title=True,
                                   use_fast_tokenizers=True
                                   )
@@ -47,7 +47,7 @@ document_store.update_embeddings(retriever)
 ### Reader
 # Load a  local model or any of the QA models on
 # Hugging Face's model hub (https://huggingface.co/models)
-reader = FARMReader(model_name_or_path="deepset/roberta-base-squad2", use_gpu=True)
+reader = FARMReader(model_name_or_path="deepset/roberta-base-squad2", use_gpu=False)
 
 ### Finder
 # The Finder sticks together reader and retriever in a pipeline to answer our actual questions.
