@@ -13,9 +13,10 @@ from haystack.retriever.dense import DensePassageRetriever
 
 # ## Preprocessing of documents
 # Let's first get some documents that we want to query
+print("Debug")
 @st.cache()
 def create_retriver():
-
+	print("Debug")
 	# FAISS is a library for efficient similarity search on a cluster of dense vectors.
 	# The FAISSDocumentStore uses a SQL(SQLite in-memory be default) document store under-the-hood
 	# to store the document text and other meta data. The vector embeddings of the text are
@@ -130,17 +131,19 @@ if demo_options:
     )
     
 else:
-    action = 3
+    action = 2
     show_passages = True
+#prediction = finder.get_answers(question="Who is the father of Arya Stark?", top_k_retriever=10, top_k_reader=5)
 
+
+# prediction = finder.get_answers(question="Who created the Dothraki vocabulary?", top_k_reader=5)
+# prediction = finder.get_answers(question="Who is the sister of Sansa?", top_k_reader=5)
 # start main text
 questions_list = [
     "<MY QUESTION>",
-    "How do people make chocolate?",
-    "Why do we get a fever when we are sick?",
-    "How can different animals perceive different colors?",
-    "What is natural language processing?",
-    "What's the best way to treat a sunburn?",
+    "Who is the father of Arya Stark?",
+    "Who created the Dothraki vocabulary?",
+    "Who is the sister of Sansa?",
 
 ]
 question_s = st.selectbox(
