@@ -10,6 +10,17 @@ from haystack.reader.farm import FARMReader
 from haystack.utils import print_answers
 from haystack.retriever.dense import DensePassageRetriever
 
+# ## Preprocessing of documents
+# Let's first get some documents that we want to query
+@st.cache(
+    
+)
+def create_store():
+	# FAISS is a library for efficient similarity search on a cluster of dense vectors.
+	# The FAISSDocumentStore uses a SQL(SQLite in-memory be default) document store under-the-hood
+	# to store the document text and other meta data. The vector embeddings of the text are
+	# indexed on a FAISS Index that later is queried for searching answers.
+	document_store = FAISSDocumentStore()
 
 # FAISS is a library for efficient similarity search on a cluster of dense vectors.
 # The FAISSDocumentStore uses a SQL(SQLite in-memory be default) document store under-the-hood
@@ -64,7 +75,7 @@ finder = Finder(reader, retriever)
 # prediction = finder.get_answers(question="Who created the Dothraki vocabulary?", top_k_reader=5)
 # prediction = finder.get_answers(question="Who is the sister of Sansa?", top_k_reader=5)
 #finder = create_retriver()
-st.title('My first app')
+st.title('Narad: End-to-End Question Answering Pipeline')
 
 # Start sidebar
 header_html = "Options"
@@ -97,9 +108,7 @@ st.sidebar.markdown(
 
 # Long Form QA with ELI5 and Wikipedia
 description = """
-This demo presents a model trained to [provide long-form answers to open-domain questions](https://yjernite.github.io/lfqa.html).
-First, a document retriever fetches a set of relevant Wikipedia passages given the question from the [Wiki40b](https://research.google/pubs/pub49029/) dataset,
-a pre-processed fixed snapshot of Wikipedia.
+This demo presents End-to-End system for question answering based on articles on Games of Thrones!
 """
 st.sidebar.markdown(description, unsafe_allow_html=True)
 
@@ -116,18 +125,35 @@ if demo_options:
 		index=2,
 	)
 	action = action_list.index(action_st)
-	"""show_type = st.sidebar.selectbox(
+	show_type = st.sidebar.selectbox(
 		"",
 		["Show probability ", "Show score"],
 		index=0,
-	)"""
+	)
+	
 	
 else:
 	action = 2
 	show_passages = True
+
+choose_retrvr = st.sidebar.checkbox("Retriever options")
+if choose_retrvr
+retriver = st.sidebar.selectbox(
+		"",
+		["BM25","Dense","Tf-Idf","Embedding"],
+		index=1,
+	)
+
+choose_model = st.sidebar.checkbox("Model options")
+if choose_retrvr
+retriver = st.sidebar.selectbox(
+		"",
+		["Abstractive", "Genrative type(RAG)"],
+		index=0,
+	)
 #prediction = finder.get_answers(question="Who is the father of Arya Stark?", top_k_retriever=10, top_k_reader=5)
-
-
+st.checkbox("Want to upload a articel/document")
+file = st.file_uploader("Choose a file(.pdf, .dox, .csv, .txt)")
 # prediction = finder.get_answers(question="Who created the Dothraki vocabulary?", top_k_reader=5)
 # prediction = finder.get_answers(question="Who is the sister of Sansa?", top_k_reader=5)
 # start main text
@@ -153,6 +179,7 @@ if st.button("Show me!"):
 		prediction = finder.get_answers(question=str(question), top_k_retriever=10, top_k_reader=5)
 		answers = [prediction['answers'][i]['answer'] for i in range(len(prediction['answers']))]
 		contexts = [prediction['answers'][i]['context'] for i in range(len(prediction['answers']))]
+		probabilities = [prediction['answers'][i]['probability'] for i in range(len(prediction['answers']))]
 
 		#answers =["sg","SDgsdg"]
 		#contexts = ["sg","SDgsdg"]
@@ -162,13 +189,17 @@ if st.button("Show me!"):
 		st.write(answers[0])
 		st.markdown("--- \n ### The model extaracted answer from following passage:")
 		st.write(contexts[0])
+		st.markdown("--- \n #### Confidence:")
+		st.write(probabilities[0])
 	if action == 2 :
 		st.markdown("--- \n ### The other answers and corresponding passages:")
-		for ans, con in zip(answers,contexts):
+		for ans, con, prob in zip(answers[1:],contexts[1:],probabilities[1:]):
 			st.write(ans)
 			st.write(
 					'> <span style="font-family:arial; font-size:10pt;">' + con + "</span>", unsafe_allow_html=True
 				)
+			st.markdown("--- \n #### Confidence:")
+			st.write(probabilities[0])
 	if action in [1]:
 		st.markdown("--- \n ### The related passages to question are:")
 		for ans, con in zip(answers,contexts):
